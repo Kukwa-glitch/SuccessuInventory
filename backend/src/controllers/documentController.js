@@ -1,5 +1,7 @@
 const Document = require('../models/Document');
 const { deleteFromCloudinary } = require('../middleware/upload');
+const https = require('https');
+const http = require('http');
 
 /**
  * @desc Get all documents with filtering
@@ -86,6 +88,101 @@ exports.getDocumentById = async (req, res, next) => {
       success: true,
       data: document
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc Download document file
+ * @route GET /api/documents/:id/download
+ * @access Private
+ */
+exports.downloadDocument = async (req, res, next) => {
+  try {
+    const document = await Document.findById(req.params.id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: 'Document not found'
+      });
+    }
+
+    if (!document.file?.url) {
+      return res.status(404).json({
+        success: false,
+        message: 'File not found for this document'
+      });
+    }
+
+    const fileUrl = document.file.url;
+    const protocol = fileUrl.startsWith('https') ? https : http;
+
+    // Fetch file from storage
+    protocol.get(fileUrl, (response) => {
+      // Handle redirects
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        const redirectUrl = response.headers.location;
+        const redirectProtocol = redirectUrl.startsWith('https') ? https : http;
+        
+        redirectProtocol.get(redirectUrl, (redirectResponse) => {
+          if (redirectResponse.statusCode !== 200) {
+            return res.status(500).json({
+              success: false,
+              message: 'Failed to fetch file from storage'
+            });
+          }
+
+          // Set headers for download
+          const fileExtension = document.file.type?.split('/')[1] || 
+                               fileUrl.split('.').pop()?.split('?')[0] || 'file';
+          const filename = document.title 
+            ? `${document.title.replace(/[^a-z0-9\s]/gi, '_').trim()}.${fileExtension}`
+            : `document-${document._id}.${fileExtension}`;
+
+          res.setHeader('Content-Type', document.file.type || 'application/octet-stream');
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+          
+          // Pipe the file to response
+          redirectResponse.pipe(res);
+        }).on('error', (error) => {
+          console.error('Error fetching redirected file:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to download file'
+          });
+        });
+        return;
+      }
+
+      if (response.statusCode !== 200) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to fetch file from storage'
+        });
+      }
+
+      // Set headers for download
+      const fileExtension = document.file.type?.split('/')[1] || 
+                           fileUrl.split('.').pop()?.split('?')[0] || 'file';
+      const filename = document.title 
+        ? `${document.title.replace(/[^a-z0-9\s]/gi, '_').trim()}.${fileExtension}`
+        : `document-${document._id}.${fileExtension}`;
+
+      res.setHeader('Content-Type', document.file.type || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Pipe the file to response
+      response.pipe(res);
+    }).on('error', (error) => {
+      console.error('Error fetching file:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to download file'
+      });
+    });
+
   } catch (error) {
     next(error);
   }

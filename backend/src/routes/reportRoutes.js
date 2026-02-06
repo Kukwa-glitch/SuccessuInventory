@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 // Routes
 router.get('/inventory', auth, reportController.exportInventory);
+router.get('/transactions', auth, reportController.exportTransactions);
 router.get('/documents', auth, reportController.exportDocuments);
 router.get('/analytics', auth, reportController.getAnalytics);
 

@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { transactionsAPI } from '../api/services';
+import { Download, ExternalLink, FileText, FileDown } from 'lucide-react';
+import { transactionsAPI, reportsAPI } from '../api/services';
+import { useToast } from '../components/ToastContainer';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const TransactionsPage = () => {
+  const { showToast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
   const [filters, setFilters] = useState({
     type: '',
     startDate: '',
@@ -16,6 +20,48 @@ const TransactionsPage = () => {
   });
 
   const transactions = data?.data || [];
+
+  // Download document file
+  const handleDownloadDocument = (transaction) => {
+    if (!transaction.document?.url) {
+      showToast('No document available for this transaction', 'error');
+      return;
+    }
+
+    try {
+      // Open document in new tab
+      window.open(transaction.document.url, '_blank');
+      showToast('Opening document...', 'info');
+    } catch (error) {
+      showToast('Failed to open document', 'error');
+    }
+  };
+
+  // Export transactions to PDF
+  const handleExportPDF = async () => {
+    try {
+      setIsExporting(true);
+      const response = await reportsAPI.exportTransactions(filters);
+      
+      // Create blob from response
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showToast('Transactions report exported successfully', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      showToast('Failed to export transactions report', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -30,7 +76,7 @@ const TransactionsPage = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in">
         {/* Filters */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Transaction Type
@@ -76,9 +122,20 @@ const TransactionsPage = () => {
                 className="form-input"
               />
             </div>
+
+            <div className="flex items-end">
+              <button 
+                onClick={handleExportPDF}
+                disabled={isExporting || transactions.length === 0}
+                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <FileDown className="w-4 h-4" />
+                {isExporting ? 'Exporting...' : 'Export PDF'}
+              </button>
+            </div>
           </div>
           <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-            {transactions.length} transactions found
+            {transactions.length} transaction{transactions.length !== 1 ? 's' : ''} found
           </div>
         </div>
 
@@ -104,6 +161,9 @@ const TransactionsPage = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Reason
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Document
                 </th>
               </tr>
             </thead>
@@ -156,8 +216,29 @@ const TransactionsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {transaction.performedBy?.username}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                    {transaction.reason}
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                    <div className="truncate" title={transaction.reason}>
+                      {transaction.reason}
+                    </div>
+                    {transaction.notes && (
+                      <div className="text-xs text-gray-400 truncate mt-1" title={transaction.notes}>
+                        {transaction.notes}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {transaction.document?.url ? (
+                      <button
+                        onClick={() => handleDownloadDocument(transaction)}
+                        className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                        title="View/Download Document"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No file</span>
+                    )}
                   </td>
                 </tr>
               ))}

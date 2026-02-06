@@ -1,7 +1,7 @@
 const Product = require('../models/Product');
 const Document = require('../models/Document');
 const Transaction = require('../models/Transaction');
-const { generateInventoryPDF, generateDocumentsPDF } = require('../utils/pdfGenerator');
+const { generateInventoryPDF, generateTransactionsPDF, generateDocumentsPDF } = require('../utils/pdfGenerator');
 
 /**
  * @desc Export inventory report as PDF
@@ -62,6 +62,52 @@ exports.exportInventory = async (req, res, next) => {
 };
 
 /**
+ * @desc Export transactions report as PDF
+ * @route GET /api/reports/transactions
+ * @access Private
+ */
+exports.exportTransactions = async (req, res, next) => {
+  try {
+    const { type, startDate, endDate, product } = req.query;
+    const query = {};
+
+    if (type) {
+      query.type = type;
+    }
+
+    if (product) {
+      query.product = product;
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.createdAt.$lte = new Date(endDate);
+      }
+    }
+
+    const transactions = await Transaction.find(query)
+      .populate('product', 'name sku category')
+      .populate('performedBy', 'username')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const pdfBuffer = await generateTransactionsPDF(transactions);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="transactions-report-${Date.now()}.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    res.send(pdfBuffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc Export documents report as PDF
  * @route GET /api/reports/documents
  * @access Private
@@ -88,7 +134,8 @@ exports.exportDocuments = async (req, res, next) => {
     const documents = await Document.find(query)
       .populate('product', 'name sku')
       .populate('uploadedBy', 'username')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const pdfBuffer = await generateDocumentsPDF(documents);
 

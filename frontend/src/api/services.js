@@ -40,6 +40,9 @@ export const documentsAPI = {
   getAll: (params) => api.get('/documents', { params }),
   getById: (id) => api.get(`/documents/${id}`),
   getByProduct: (productId) => api.get(`/documents/product/${productId}`),
+  download: (id) => api.get(`/documents/${id}/download`, {
+    responseType: 'blob', // Important: tells axios to expect binary data
+  }),
   delete: (id) => api.delete(`/documents/${id}`),
 };
 
@@ -53,6 +56,10 @@ export const dashboardAPI = {
 // Reports API
 export const reportsAPI = {
   exportInventory: (params) => api.get('/reports/inventory', {
+    params,
+    responseType: 'blob'
+  }),
+  exportTransactions: (params) => api.get('/reports/transactions', {
     params,
     responseType: 'blob'
   }),

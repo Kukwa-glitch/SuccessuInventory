@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Download, PlusCircle, MinusCircle, Trash2, Edit } from 'lucide-react';
-import { productsAPI } from '../api/services';
+import { Plus, Download, PlusCircle, MinusCircle, Trash2, Edit, Search } from 'lucide-react';
+import { productsAPI, reportsAPI } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ToastContainer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Modal from '../components/Modal';
 import ProductForm from '../components/products/ProductForm';
 import StockAdjustmentForm from '../components/products/StockAdjustmentForm';
+import { useDebounce } from '../hooks';
 
 const InventoryPage = () => {
   const { isAdmin, isStaff } = useAuth();
@@ -16,12 +17,16 @@ const InventoryPage = () => {
   
   const [search, setSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [modalType, setModalType] = useState(null); // 'create', 'edit', 'add-stock', 'deduct-stock'
+  const [modalType, setModalType] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Fetch products
+  // Debounce search to avoid too many API calls
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Fetch products with debounced search
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', search],
-    queryFn: () => productsAPI.getAll({ search }).then((res) => res.data),
+    queryKey: ['products', debouncedSearch],
+    queryFn: () => productsAPI.getAll({ search: debouncedSearch }).then((res) => res.data),
   });
 
   const products = productsData?.data || [];
@@ -52,6 +57,32 @@ const InventoryPage = () => {
   const closeModal = () => {
     setModalType(null);
     setSelectedProduct(null);
+  };
+
+  // Export inventory to PDF
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const response = await reportsAPI.exportInventory({ search: debouncedSearch });
+      
+      // Create blob from response
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `inventory-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showToast('Inventory exported successfully', 'success');
+    } catch (error) {
+      console.error('Export error:', error);
+      showToast('Failed to export inventory', 'error');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const getStockStatus = (product) => {
@@ -86,14 +117,17 @@ const InventoryPage = () => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="form-input max-w-md"
-              />
+            <div className="flex-1 w-full max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search products by name, SKU, or description..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="form-input pl-10 w-full"
+                />
+                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+              </div>
             </div>
             <div className="flex gap-2">
               {isStaff && (
@@ -105,14 +139,19 @@ const InventoryPage = () => {
                   Add Product
                 </button>
               )}
-              <button className="btn-secondary flex items-center gap-2">
+              <button 
+                onClick={handleExport}
+                disabled={isExporting}
+                className="btn-secondary flex items-center gap-2 disabled:opacity-50"
+              >
                 <Download className="w-4 h-4" />
-                Export
+                {isExporting ? 'Exporting...' : 'Export'}
               </button>
             </div>
           </div>
           <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-            {products.length} products found
+            {products.length} product{products.length !== 1 ? 's' : ''} found
+            {debouncedSearch && ` for "${debouncedSearch}"`}
           </div>
         </div>
 
@@ -241,6 +280,9 @@ const InventoryPage = () => {
         {products.length === 0 && (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <p>No products found</p>
+            {debouncedSearch && (
+              <p className="text-sm mt-2">Try adjusting your search criteria</p>
+            )}
           </div>
         )}
       </div>
