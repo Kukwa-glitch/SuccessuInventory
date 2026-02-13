@@ -40,10 +40,15 @@ const productSchema = new mongoose.Schema({
     default: 'pcs', // pieces
     enum: ['pcs', 'kg', 'g', 'l', 'ml', 'box', 'pack', 'dozen', 'pair']
   },
-  price: {
-    type: Number,
-    required: [true, 'Please provide a price'],
-    min: [0, 'Price cannot be negative']
+  productType: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  size: {
+    type: String,
+    trim: true,
+    default: ''
   },
   supplier: {
     name: {
@@ -93,11 +98,6 @@ productSchema.virtual('stockStatus').get(function() {
   } else {
     return 'in-stock';
   }
-});
-
-// Virtual field for stock value
-productSchema.virtual('totalValue').get(function() {
-  return this.quantity * this.price;
 });
 
 // Index for faster searches

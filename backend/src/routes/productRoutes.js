@@ -15,7 +15,8 @@ const createProductValidation = [
   body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a positive number'),
   body('minStockLevel').isInt({ min: 0 }).withMessage('Minimum stock level must be a positive number'),
   body('unit').notEmpty().withMessage('Unit is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number')
+  body('productType').optional().trim().isLength({ max: 100 }).withMessage('Product type cannot exceed 100 characters'),
+  body('size').optional().trim().isLength({ max: 100 }).withMessage('Size cannot exceed 100 characters')
 ];
 
 const stockValidation = [

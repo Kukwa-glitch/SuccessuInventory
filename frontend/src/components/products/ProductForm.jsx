@@ -24,7 +24,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       quantity: 0,
       minStockLevel: 10,
       unit: 'pcs',
-      price: 0,
+      productType: '',
+      size: '',
       supplier: { name: '', contact: '' },
       location: 'Main Warehouse',
     },
@@ -157,18 +158,44 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Category *
+          </label>
+          <input
+            type="text"
+            {...register('category', { required: 'Category is required' })}
+            className="form-input"
+          />
+          {errors.category && (
+            <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Product Type
+          </label>
+          <input
+            type="text"
+            {...register('productType')}
+            className="form-input"
+            placeholder="e.g., Raw Material, Finished Goods"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Category *
+          Size
         </label>
         <input
           type="text"
-          {...register('category', { required: 'Category is required' })}
+          {...register('size')}
           className="form-input"
+          placeholder="e.g., Small, Medium, Large, XL, 100ml"
         />
-        {errors.category && (
-          <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
-        )}
       </div>
 
       <div>
@@ -182,7 +209,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         />
       </div>
 
-      {/* Stock & Pricing */}
+      {/* Stock Info */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -222,41 +249,21 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Unit *
-          </label>
-          <select {...register('unit', { required: true })} className="form-input">
-            <option value="pcs">Pieces</option>
-            <option value="kg">Kilograms</option>
-            <option value="g">Grams</option>
-            <option value="l">Liters</option>
-            <option value="ml">Milliliters</option>
-            <option value="box">Box</option>
-            <option value="pack">Pack</option>
-            <option value="dozen">Dozen</option>
-            <option value="pair">Pair</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Price *
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            {...register('price', {
-              required: 'Price is required',
-              min: { value: 0, message: 'Cannot be negative' },
-            })}
-            className="form-input"
-          />
-          {errors.price && (
-            <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-          )}
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Unit *
+        </label>
+        <select {...register('unit', { required: true })} className="form-input">
+          <option value="pcs">Pieces</option>
+          <option value="kg">Kilograms</option>
+          <option value="g">Grams</option>
+          <option value="l">Liters</option>
+          <option value="ml">Milliliters</option>
+          <option value="box">Box</option>
+          <option value="pack">Pack</option>
+          <option value="dozen">Dozen</option>
+          <option value="pair">Pair</option>
+        </select>
       </div>
 
       {/* Supplier & Location */}

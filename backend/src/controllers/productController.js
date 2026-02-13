@@ -120,7 +120,8 @@ exports.createProduct = async (req, res, next) => {
       quantity,
       minStockLevel,
       unit,
-      price,
+      productType,
+      size,
       supplier,
       location
     } = req.body;
@@ -143,7 +144,8 @@ exports.createProduct = async (req, res, next) => {
       quantity: parseInt(quantity) || 0,
       minStockLevel: parseInt(minStockLevel) || 10,
       unit,
-      price: parseFloat(price),
+      productType: productType || '',
+      size: size || '',
       supplier,
       location,
       createdBy: req.userId,
@@ -210,7 +212,8 @@ exports.updateProduct = async (req, res, next) => {
       description,
       minStockLevel,
       unit,
-      price,
+      productType,
+      size,
       supplier,
       location,
       status
@@ -222,7 +225,8 @@ exports.updateProduct = async (req, res, next) => {
     if (description !== undefined) product.description = description;
     if (minStockLevel) product.minStockLevel = parseInt(minStockLevel);
     if (unit) product.unit = unit;
-    if (price) product.price = parseFloat(price);
+    if (productType !== undefined) product.productType = productType;
+    if (size !== undefined) product.size = size;
     if (supplier !== undefined) product.supplier = supplier;
     if (location !== undefined) product.location = location;
     if (status) product.status = status;

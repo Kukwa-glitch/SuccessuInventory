@@ -81,7 +81,7 @@ const ReportsPage = () => {
                         {category.totalQuantity} units
                       </span>
                       <span className="text-xs text-gray-500">
-                        ${category.totalValue.toFixed(2)}
+                        {category.count} products
                       </span>
                     </div>
                   </div>
@@ -90,9 +90,6 @@ const ReportsPage = () => {
                       className="bg-primary-500 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     />
-                  </div>
-                  <div className="mt-1 text-xs text-gray-500">
-                    {category.count} products
                   </div>
                 </div>
               );
@@ -168,10 +165,10 @@ const ReportsPage = () => {
           </div>
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Total Stock Value
+              Total Stock Units
             </p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-              ${categoryData?.reduce((sum, c) => sum + c.totalValue, 0).toFixed(2)}
+              {categoryData?.reduce((sum, c) => sum + c.totalQuantity, 0).toLocaleString()}
             </p>
           </div>
           <div>

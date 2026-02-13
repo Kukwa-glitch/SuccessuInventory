@@ -81,7 +81,6 @@ const generateInventoryPDF = (products, filters = {}) => {
       // Summary Statistics
       const totalItems = products.length;
       const totalQty = products.reduce((sum, p) => sum + p.quantity, 0);
-      const totalValue = products.reduce((sum, p) => sum + (p.quantity * p.price), 0);
       const lowStock = products.filter(p => p.quantity > 0 && p.quantity <= p.minStockLevel).length;
       const outOfStock = products.filter(p => p.quantity === 0).length;
 
@@ -90,7 +89,6 @@ const generateInventoryPDF = (products, filters = {}) => {
       doc.fontSize(10).fillColor('#34495e');
       doc.text(`Total Products: ${totalItems}`);
       doc.text(`Total Stock Quantity: ${totalQty.toLocaleString()}`);
-      doc.text(`Total Inventory Value: $${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
       doc.text(`Low Stock Items: ${lowStock}`);
       doc.text(`Out of Stock Items: ${outOfStock}`);
       doc.moveDown(2);
@@ -100,13 +98,13 @@ const generateInventoryPDF = (products, filters = {}) => {
       doc.moveDown();
 
       const tableTop = doc.y;
-      const headers = ['SKU', 'Product Name', 'Category', 'Qty', 'Price', 'Value', 'Status'];
-      const colWidths = [60, 140, 80, 40, 50, 60, 60];
+      const headers = ['SKU', 'Product Name', 'Category', 'Type', 'Size', 'Qty', 'Status'];
+      const colWidths = [60, 120, 75, 70, 55, 40, 60];
       let xPos = 50;
 
       // Table Headers
       doc.fontSize(9).fillColor('#fff');
-      doc.rect(50, tableTop, 490, 20).fill('#34495e');
+      doc.rect(50, tableTop, 480, 20).fill('#34495e');
       
       xPos = 50;
       headers.forEach((header, i) => {
@@ -125,7 +123,7 @@ const generateInventoryPDF = (products, filters = {}) => {
           
           // Repeat headers on new page
           doc.fontSize(9).fillColor('#fff');
-          doc.rect(50, yPos - 25, 490, 20).fill('#34495e');
+          doc.rect(50, yPos - 25, 480, 20).fill('#34495e');
           xPos = 50;
           headers.forEach((header, i) => {
             doc.text(header, xPos + 5, yPos - 20, { width: colWidths[i], align: 'left' });
@@ -136,7 +134,7 @@ const generateInventoryPDF = (products, filters = {}) => {
 
         // Alternate row color
         if (index % 2 === 0) {
-          doc.rect(50, yPos - 5, 490, 20).fillOpacity(0.05).fill('#bdc3c7').fillOpacity(1);
+          doc.rect(50, yPos - 5, 480, 20).fillOpacity(0.05).fill('#bdc3c7').fillOpacity(1);
         }
 
         xPos = 50;
@@ -145,11 +143,11 @@ const generateInventoryPDF = (products, filters = {}) => {
         
         const rowData = [
           product.sku || '',
-          (product.name || '').substring(0, 22),
-          (product.category || '').substring(0, 12),
+          (product.name || '').substring(0, 18),
+          (product.category || '').substring(0, 11),
+          (product.productType || '').substring(0, 10),
+          (product.size || '').substring(0, 8),
           product.quantity.toString(),
-          `$${product.price.toFixed(2)}`,
-          `$${(product.quantity * product.price).toFixed(2)}`,
           stockStatus
         ];
 

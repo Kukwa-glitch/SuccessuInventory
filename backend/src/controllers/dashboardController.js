@@ -25,9 +25,6 @@ exports.getDashboardStats = async (req, res, next) => {
     // Out of stock items
     const outOfStockItems = products.filter(p => p.quantity === 0);
 
-    // Total inventory value
-    const totalValue = products.reduce((sum, p) => sum + (p.quantity * p.price), 0);
-
     // Recent activity (last 10 transactions)
     const recentActivity = await Transaction.find()
       .populate('product', 'name sku')
@@ -42,8 +39,7 @@ exports.getDashboardStats = async (req, res, next) => {
           totalItems,
           totalQuantity,
           lowStockCount: lowStockItems.length,
-          outOfStockCount: outOfStockItems.length,
-          totalValue: totalValue.toFixed(2)
+          outOfStockCount: outOfStockItems.length
         },
         lowStockItems: lowStockItems.slice(0, 5).map(p => ({
           id: p._id,
@@ -81,14 +77,12 @@ exports.getInventoryByCategory = async (req, res, next) => {
         acc[category] = {
           category,
           count: 0,
-          totalQuantity: 0,
-          totalValue: 0
+          totalQuantity: 0
         };
       }
 
       acc[category].count += 1;
       acc[category].totalQuantity += product.quantity;
-      acc[category].totalValue += product.quantity * product.price;
 
       return acc;
     }, {});

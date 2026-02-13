@@ -29,11 +29,18 @@ const DashboardPage = () => {
 
   const statsCards = [
     {
-      title: 'Total Items',
-      value: stats?.summary?.totalQuantity || 0,
-      subtitle: `Across ${stats?.summary?.totalItems || 0} products`,
+      title: 'Total Products',
+      value: stats?.summary?.totalItems || 0,
+      subtitle: 'Different items',
       icon: Package,
       color: 'primary',
+    },
+    {
+      title: 'Total Stock',
+      value: stats?.summary?.totalQuantity || 0,
+      subtitle: 'Units in inventory',
+      icon: Grid,
+      color: 'secondary',
     },
     {
       title: 'Low Stock',
@@ -48,13 +55,6 @@ const DashboardPage = () => {
       subtitle: 'Urgent restock needed',
       icon: XCircle,
       color: 'red',
-    },
-    {
-      title: 'Total Value',
-      value: `$${parseFloat(stats?.summary?.totalValue || 0).toLocaleString()}`,
-      subtitle: 'Inventory worth',
-      icon: Grid,
-      color: 'secondary',
     },
   ];
 

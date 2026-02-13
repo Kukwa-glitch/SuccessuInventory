@@ -48,11 +48,17 @@ const createProductValidation = [
     .isIn(['pcs', 'kg', 'g', 'l', 'ml', 'box', 'pack', 'dozen', 'pair'])
     .withMessage('Invalid unit of measurement'),
 
-  body('price')
-    .notEmpty()
-    .withMessage('Price is required')
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
+  body('productType')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Product type cannot exceed 100 characters'),
+
+  body('size')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Size cannot exceed 100 characters'),
 
   body('location')
     .optional()
@@ -96,10 +102,17 @@ const updateProductValidation = [
     .isIn(['pcs', 'kg', 'g', 'l', 'ml', 'box', 'pack', 'dozen', 'pair'])
     .withMessage('Invalid unit of measurement'),
 
-  body('price')
+  body('productType')
     .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Product type cannot exceed 100 characters'),
+
+  body('size')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Size cannot exceed 100 characters'),
 
   body('status')
     .optional()
