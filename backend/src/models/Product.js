@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
   sku: {
     type: String,
     required: [true, 'Please provide a SKU'],
-    unique: true,
+    // unique: true constraint REMOVED - duplicate SKUs are now allowed
     trim: true,
     uppercase: true
   },
@@ -100,9 +100,10 @@ productSchema.virtual('stockStatus').get(function() {
   }
 });
 
-// Index for faster searches
+// Index for faster searches (removed unique constraint from SKU)
 productSchema.index({ name: 'text', sku: 'text', category: 'text' });
 productSchema.index({ category: 1, status: 1 });
 productSchema.index({ quantity: 1, minStockLevel: 1 });
+productSchema.index({ sku: 1 }); // Non-unique index for search performance
 
 module.exports = mongoose.model('Product', productSchema);

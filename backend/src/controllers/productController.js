@@ -126,14 +126,7 @@ exports.createProduct = async (req, res, next) => {
       location
     } = req.body;
 
-    // Check if SKU already exists
-    const existingProduct = await Product.findOne({ sku: sku.toUpperCase() });
-    if (existingProduct) {
-      return res.status(400).json({
-        success: false,
-        message: 'Product with this SKU already exists'
-      });
-    }
+    // SKU uniqueness check removed - duplicate SKUs are now allowed
 
     // Create product data
     const productData = {
