@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import SSI from '../../assets/SSI.png';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
@@ -54,14 +55,14 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
+            <div className="w-15 h-15 rounded-lg flex items-center justify-center shadow-lg">
+              <img src={SSI} alt="Logo" className="w-12 h-12" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                StockFlow
+                Successu
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Pro</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Inventory Management</p>
             </div>
           </div>
         </div>

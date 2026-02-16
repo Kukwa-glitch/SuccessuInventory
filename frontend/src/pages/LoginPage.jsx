@@ -5,6 +5,7 @@ import { Package } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ToastContainer';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SSI from '../assets/SSI.png';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -40,11 +41,11 @@ const LoginPage = () => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100 hover:scale-[1.02]">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900 mb-4">
-            <Package className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl shadow-md">
+            <img src={SSI} alt="Logo" className="w-16 h-16" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            StockFlow Pro
+            Successu International Inc.
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
             Inventory Management System
